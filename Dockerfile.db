@@ -1,0 +1,5 @@
+FROM postgres:12
+
+ENV PGDATA /var/lib/postgresql/data-frozen
+RUN mkdir -p /var/lib/postgresql/data-frozen \
+    && chown -R postgres:postgres /var/lib/postgresql/data-frozen
