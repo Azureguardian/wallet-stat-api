@@ -1,0 +1,18 @@
+logging:
+  level:
+    root: INFO
+    org:
+      springframework:
+        web: DEBUG
+      jooq: TRACE
+#
+#spring:
+#  datasource:
+#    driver-class-name: "org.postgresql.Driver"
+#spring.jpa.hibernate.ddl-auto=create-drop
+
+spring:
+  jooq:
+    sql-dialect: postgres
+  r2dbc:
+    url: "r2dbc:postgresql://postgres:postgres@localhost:5432/wallet"

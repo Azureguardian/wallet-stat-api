@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  flyway:
+    build:
+      context: .
+      dockerfile: Dockerfile.flyway
+    depends_on:
+      - db
+    networks:
+      - private_network
+
+  psql-cli:
+    image: postgres:12
+    depends_on:
+      - db
+    networks:
+      - private_network
+
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    environment:
+      POSTGRES_DB: "db"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - private_network
+
+  waiter:
+    image: willwill/wait-for-it
+    networks:
+      - private_network
+    depends_on:
+      - db
+
+networks:
+  private_network:
