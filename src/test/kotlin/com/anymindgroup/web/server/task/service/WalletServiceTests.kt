@@ -7,11 +7,9 @@ import com.anymindgroup.web.server.task.interfaces.WalletBalanceDateTimeAggregat
 import com.anymindgroup.web.server.task.interfaces.WalletStorage
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.invoke
 import io.mockk.verify
-import kotlinx.coroutines.runBlocking
 import org.jooq.DSLContext
 import org.jooq.impl.DefaultConfiguration
 import org.junit.jupiter.api.Test
@@ -49,7 +47,7 @@ class WalletServiceTests {
             amount = BigDecimal("1.1")
         )
         every { transactionalUtils.transaction(captureLambda<(DSLContext) -> Mono<Any>>()) } answers
-                { lambda<(DSLContext) -> Mono<Any>>().invoke(DefaultConfiguration().dsl()) }
+            { lambda<(DSLContext) -> Mono<Any>>().invoke(DefaultConfiguration().dsl()) }
 
         // Save transaction into transaction log
         every { walletRepository.saveTransaction(any(), any()) } returns Mono.just(1)

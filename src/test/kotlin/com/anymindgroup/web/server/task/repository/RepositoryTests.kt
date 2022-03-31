@@ -31,7 +31,6 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.stream.Collectors
 
-
 @SpringBootTest
 @Testcontainers
 class RepositoryTests {

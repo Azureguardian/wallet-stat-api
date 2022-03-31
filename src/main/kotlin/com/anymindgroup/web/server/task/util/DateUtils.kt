@@ -7,7 +7,7 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 object DateUtils {
-    val bangkokTimeZone: ZoneId = ZoneId.of( "Asia/Bangkok")
+    val bangkokTimeZone: ZoneId = ZoneId.of("Asia/Bangkok")
 }
 
 fun OffsetDateTime.atBangkok(): ZonedDateTime = atZoneSameInstant(bangkokTimeZone)

@@ -13,7 +13,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoUnit
 
 @Repository
 class WalletBalanceDateTimeAggregateRepository(
@@ -92,11 +91,9 @@ class WalletBalanceDateTimeAggregateRepository(
                                     .where(balanceAggregate.DATETIME.gt(dateTimeHourly))
                             )
                         )
-
                 }
             }
         }.map {
-
         }
     }
 }

@@ -5,10 +5,8 @@ import com.anymindgroup.web.server.task.entity.payload.TransactionPayload
 import com.anymindgroup.web.server.task.service.WalletService
 import com.anymindgroup.web.server.task.util.truncateToHourEnd
 import com.ninjasquad.springmockk.MockkBean
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
-import io.mockk.runs
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +17,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoUnit
 
 @Suppress("ReactiveStreamsUnusedPublisher")
 @WebFluxTest(controllers = [WalletController::class])
@@ -53,7 +50,6 @@ class WalletControllerTests {
             .jsonPath("$.length()").isEqualTo(1)
             .jsonPath("$[0].amount").isEqualTo(balanceByDateTimeDto.balance)
     }
-
 
     @Nested
     inner class TopUpWallet {

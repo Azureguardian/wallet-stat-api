@@ -1,7 +1,7 @@
 package com.anymindgroup.web.server.task.repository
 
-import com.anymindgroup.web.server.task.interfaces.WalletStorage
 import com.anymindgroup.web.server.task.entity.dto.TransactionDto
+import com.anymindgroup.web.server.task.interfaces.WalletStorage
 import com.anymindgroup.web.server.task.public_.Public.PUBLIC
 import com.anymindgroup.web.server.task.public_.tables.Transactions
 import org.jooq.DSLContext

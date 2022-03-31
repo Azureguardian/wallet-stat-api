@@ -1,6 +1,5 @@
 package com.anymindgroup.web.server.task.controller
 
-import com.anymindgroup.web.server.task.entity.dto.BalanceByDateTimeDto
 import com.anymindgroup.web.server.task.entity.payload.TransactionPayload
 import com.anymindgroup.web.server.task.entity.view.BalanceByDateTimeView
 import com.anymindgroup.web.server.task.service.WalletService
