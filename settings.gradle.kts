@@ -1,1 +1,1 @@
-rootProject.name = "web.server.task"
+rootProject.name = "wallet-stat-api"
