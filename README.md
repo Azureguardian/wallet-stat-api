@@ -1,11 +1,15 @@
 # wallet-stat-api
-Build
+
+#### Build    
+Apply migrations, create image for tests, build
 ```
 make migrate
 make commit-image
 ./gradlew build
 ```
-Run
+
+#### Run
+Start local database and application
 ```
 make start
 ./gradlew bootRun
