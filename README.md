@@ -1,16 +1,17 @@
 # wallet-stat-api
+Build
 ```
 make migrate
-```
-```
 make commit-image
+./gradlew build
 ```
+Run
 ```
-./gradlew generateXmlJooq --rerun-tasks -P dbUrl=jdbc:postgresql://localhost:5432/wallet -P dbUser=postgres -P dbPassword=postgres
-./gradlew generateJavaJooq --rerun-tasks
+make start
+./gradlew bootRun
 ```
 
-save transaction record:
+Save transaction record:
 ```
 curl --request POST \
   --url 'http://localhost:8080/wallet/top_up?=' \
