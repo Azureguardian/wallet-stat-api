@@ -2,15 +2,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jooq.meta.jaxb.Property
 import org.jooq.meta.jaxb.SchemaMappingType
 
-val springMockkVersion: String by project
-
 plugins {
 	id("org.springframework.boot") version "2.6.5"
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
 	kotlin("jvm") version "1.6.10"
 	kotlin("plugin.spring") version "1.6.10"
 	id("nu.studer.jooq") version "6.0.1"
-//	id("nu.studer.jooq") version "7.1.1"
 }
 
 group = "com.anymindgroup"
@@ -114,14 +111,10 @@ repositories {
 }
 
 dependencies {
-//	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("org.springframework.boot:spring-boot-starter-jooq")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-//    implementation("org.springframework.data:spring-data-r2dbc:1.4.3")
 	implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-    // https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api
-//     jooqGenerator("jakarta.xml.bind:jakarta.xml.bind-api:3.0.1")
 
     runtimeOnly("io.r2dbc:r2dbc-postgresql")
 	jooqGenerator("org.postgresql:postgresql:42.3.3")
@@ -131,15 +124,13 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.flywaydb:flyway-core:8.5.4")
-//    implementation("org.jooq:jooq:3.16.5")
 
     testImplementation("org.testcontainers:testcontainers:1.16.3")
     testImplementation("org.testcontainers:postgresql:1.16.3")
 	testImplementation("org.testcontainers:junit-jupiter:1.16.3")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
-	testImplementation("com.ninja-squad:springmockk:$springMockkVersion")
+	testImplementation("com.ninja-squad:springmockk:3.1.1")
 }
 
 tasks.withType<KotlinCompile> {

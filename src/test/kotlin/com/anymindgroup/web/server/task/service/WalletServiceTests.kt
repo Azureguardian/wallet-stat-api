@@ -2,6 +2,7 @@ package com.anymindgroup.web.server.task.service
 
 import com.anymindgroup.web.server.task.config.TransactionalUtils
 import com.anymindgroup.web.server.task.entity.dto.TransactionDto
+import com.anymindgroup.web.server.task.exceptions.IncorrectDateTimeException
 import com.anymindgroup.web.server.task.interfaces.WalletBalanceDateTimeAggregateStorage
 import com.anymindgroup.web.server.task.interfaces.WalletStorage
 import com.ninjasquad.springmockk.MockkBean
@@ -9,10 +10,12 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.invoke
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.jooq.DSLContext
 import org.jooq.impl.DefaultConfiguration
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.r2dbc.core.DatabaseClient
@@ -51,10 +54,21 @@ class WalletServiceTests {
         // Save transaction into transaction log
         every { walletRepository.saveTransaction(any(), any()) } returns Mono.just(1)
         // Upsert balance value in an aggregated report
-        coEvery { walletAggregateRepository.update(any(), any(), any()) } returns Mono.empty()
+        coEvery { walletAggregateRepository.processAmount(any(), any(), any()) } returns Mono.empty()
 
-        runBlocking { walletService.topUp(transactionDto) }
-        coVerify(exactly = 1) { walletRepository.saveTransaction(any(), any<TransactionDto>()) }
-        coVerify(exactly = 1) { walletAggregateRepository.update(any(), any(), any()) }
+        walletService.topUp(transactionDto)
+        verify(exactly = 1) { walletRepository.saveTransaction(any(), any<TransactionDto>()) }
+        verify(exactly = 1) { walletAggregateRepository.processAmount(any(), any(), any()) }
+    }
+
+    @Test
+    fun `transaction date cannot be in the future`() {
+        val transactionDto = TransactionDto(
+            datetime = OffsetDateTime.now().plusYears(10),
+            amount = BigDecimal("1.1")
+        )
+        assertThrows<IncorrectDateTimeException> {
+            walletService.topUp(transactionDto)
+        }
     }
 }

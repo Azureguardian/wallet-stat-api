@@ -24,7 +24,11 @@ class WalletController(
     private val walletService: WalletService
 ) {
 
-    @PostMapping("/top_up", consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping(
+        "/top_up",
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     fun topUp(@RequestBody @Valid payload: TransactionPayload): Mono<ResponseEntity<Unit>> {
         return walletService.topUp(payload.toDto()).map {
             ResponseEntity.ok()
@@ -33,17 +37,17 @@ class WalletController(
         }
     }
 
-    @GetMapping("/balance_stat", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("/history", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun balanceStat(
         @RequestParam("start_datetime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) startDateTime: OffsetDateTime,
         @RequestParam("end_datetime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) endDateTime: OffsetDateTime
     ): Flux<BalanceByDateTimeView> {
         return walletService.getBalanceByDateTimes(startDateTime, endDateTime)
             .map { dto ->
-            BalanceByDateTimeView(
-                dateTime = dto.dateTime,
-                amount = dto.balance
-            )
-        }
+                BalanceByDateTimeView(
+                    datetime = dto.dateTime,
+                    amount = dto.balance
+                )
+            }
     }
 }

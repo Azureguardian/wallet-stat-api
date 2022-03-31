@@ -4,6 +4,6 @@ import java.math.BigDecimal
 import java.time.OffsetDateTime
 
 data class BalanceByDateTimeView(
-    val dateTime: OffsetDateTime,
+    val datetime: OffsetDateTime,
     val amount: BigDecimal
 )
