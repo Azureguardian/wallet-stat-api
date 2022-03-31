@@ -11,7 +11,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
 }
 
-group = "com.anymindgroup"
+group = "com.azureguardian"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
@@ -91,7 +91,7 @@ jooq {
                         isPojosEqualsAndHashCode = true
                     }
                     target.apply {
-                        packageName = "com.anymindgroup.web.server.task"
+                        packageName = "com.azureguardian.wallet.stat.api"
                         directory = "$buildDir/generated/sources/jooq/src/main/java"
                     }
                     strategy.name = "org.jooq.codegen.DefaultGeneratorStrategy"
