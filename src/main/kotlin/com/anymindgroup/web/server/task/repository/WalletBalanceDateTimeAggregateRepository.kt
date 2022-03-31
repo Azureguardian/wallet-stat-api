@@ -6,8 +6,6 @@ import com.anymindgroup.web.server.task.entity.dto.BalanceByDateTimeDto
 import com.anymindgroup.web.server.task.interfaces.WalletBalanceDateTimeAggregateStorage
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
@@ -17,9 +15,10 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 
 @Repository
-class WalletBalanceDateTimeAggregateStorageImpl(
+class WalletBalanceDateTimeAggregateRepository(
     private val dslContext: DSLContext
 ) : WalletBalanceDateTimeAggregateStorage {
+
     companion object {
         val balanceAggregate: BalanceHourly = AGGREGATES.BALANCE_HOURLY
     }
@@ -49,20 +48,6 @@ class WalletBalanceDateTimeAggregateStorageImpl(
                 .from(balanceAggregate)
                 .where(balanceAggregate.DATETIME.eq(dateTimeHourly))
         )
-//        val insertOrUpdateQuery = dslContext.insertInto(balanceAggregate)
-//            .select(
-//                DSL.select(
-//                    DSL.`val`(dateTimeHourly),
-//                    balanceAggregate.BALANCE.plus(amount)
-//                ).from(balanceAggregate)
-//                    .where(balanceAggregate.DATETIME.le(dateTimeHourly))
-//                    .limit(1)
-//            ).onConflict(balanceAggregate.DATETIME)
-//            .doUpdate()
-//            .set(balanceAggregate.BALANCE, balanceAggregate.BALANCE.plus(amount))
-//            .where(balanceAggregate.DATETIME.ge(dateTimeHourly))
-//            .returningResult(balanceAggregate.DATETIME)
-
         return currentAggregateValue.hasElement().flatMap { hasElement ->
             if (hasElement) {
                 Mono.from(
