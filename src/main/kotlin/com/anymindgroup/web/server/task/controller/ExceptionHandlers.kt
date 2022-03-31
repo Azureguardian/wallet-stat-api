@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.bind.support.WebExchangeBindException
+import java.lang.Exception
 
 @RestControllerAdvice
 class ExceptionHandlers {
@@ -25,6 +26,14 @@ class ExceptionHandlers {
     fun handler(e: WebExchangeBindException): ResponseEntity<BaseError> {
         return ResponseEntity
             .badRequest()
+            .body(BaseError(e.localizedMessage))
+    }
+
+    @ExceptionHandler(Exception::class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    fun handler(e: Exception): ResponseEntity<BaseError> {
+        return ResponseEntity
+            .internalServerError()
             .body(BaseError(e.localizedMessage))
     }
 }

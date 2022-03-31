@@ -107,6 +107,7 @@ class RepositoryTests {
         // Aggregate is empty
         // 2011-10-05T11:00:00+00:00 - 1
         val dateTime = OffsetDateTime.parse("2011-10-05T10:48:01+00:00")
+        val dateTimeTruncated = dateTime.truncateToHourEnd()
         aggregateRepository.processAmount(dslContext, dateTime, BigDecimal.ONE).block()
         aggregateRepository.processAmount(dslContext, dateTime, BigDecimal.ONE).block()
         val result = aggregateRepository.getBalanceHistoryHourly(dateTime.minusHours(1), dateTime.plusHours(1))
@@ -114,13 +115,14 @@ class RepositoryTests {
             .block()!!
         assertEquals(1, result.size)
         assertEquals(BigDecimal("2"), result.first().balance)
-        assertTrue(dateTime.truncateToHourEnd().isEqual(result.first().dateTime))
+        assertTrue(dateTimeTruncated.isEqual(result.first().dateTime))
 
         // If we receive a "late" transaction, where dateTime < current hour
         // We update aggregate by amount for all records where dateTime > transaction dateTime
         // 2011-10-05T10:00:00+00:00 - 1
         // 2011-10-05T11:00:00+00:00 - 3
         val dateTimeLate = OffsetDateTime.parse("2011-10-05T09:48:01+00:00")
+        val dateTimeLateTruncated = dateTimeLate.truncateToHourEnd()
         aggregateRepository.processAmount(dslContext, dateTimeLate, BigDecimal.ONE).block()
         val resultWithLateTransaction = aggregateRepository.getBalanceHistoryHourly(
             dateTimeLate.minusHours(2),
@@ -128,17 +130,17 @@ class RepositoryTests {
         )
             .collect(Collectors.toList())
             .block()!!
-            .sortedBy { it.dateTime }
         assertEquals(2, resultWithLateTransaction.size)
         assertEquals(BigDecimal.ONE, resultWithLateTransaction.first().balance)
-        assertTrue(dateTimeLate.truncateToHourEnd().isEqual(resultWithLateTransaction.first().dateTime))
+        assertTrue(dateTimeLateTruncated.isEqual(resultWithLateTransaction.first().dateTime))
         assertEquals(BigDecimal("3"), resultWithLateTransaction[1].balance)
-        assertTrue(dateTime.truncateToHourEnd().isEqual(resultWithLateTransaction[1].dateTime))
+        assertTrue(dateTimeTruncated.isEqual(resultWithLateTransaction[1].dateTime))
 
         // 2011-10-05T10:00:00+00:00 - 1
         // 2011-10-05T11:00:00+00:00 - 3
         // 2011-10-05T12:00:00+00:00 - 4
         val dateTimeLast = OffsetDateTime.parse("2011-10-05T11:48:01+00:00")
+        val dateTimeLastTruncated = dateTimeLast.truncateToHourEnd()
         aggregateRepository.processAmount(dslContext, dateTimeLast, BigDecimal.ONE).block()
         val resultLast = aggregateRepository.getBalanceHistoryHourly(
             dateTimeLast.minusHours(3),
@@ -146,18 +148,60 @@ class RepositoryTests {
         )
             .collect(Collectors.toList())
             .block()!!
-            .sortedBy { it.dateTime }
         assertEquals(3, resultLast.size)
         assertEquals(BigDecimal.ONE, resultLast.first().balance)
-        assertTrue(dateTimeLate.truncateToHourEnd().isEqual(resultLast.first().dateTime))
+        assertTrue(dateTimeLateTruncated.isEqual(resultLast.first().dateTime))
         assertEquals(BigDecimal("3"), resultLast[1].balance)
-        assertTrue(dateTime.truncateToHourEnd().isEqual(resultLast[1].dateTime))
+        assertTrue(dateTimeTruncated.isEqual(resultLast[1].dateTime))
         assertEquals(BigDecimal("4"), resultLast[2].balance)
-        assertTrue(dateTimeLast.truncateToHourEnd().isEqual(resultLast[2].dateTime))
+        assertTrue(dateTimeLastTruncated.isEqual(resultLast[2].dateTime))
+
+        // If we update existing previous record, we should update later ones
+        // 2011-10-05T10:00:00+00:00 - 2
+        // 2011-10-05T11:00:00+00:00 - 4
+        // 2011-10-05T12:00:00+00:00 - 5
+        aggregateRepository.processAmount(dslContext, dateTimeLate, BigDecimal.ONE).block()
+        val res = aggregateRepository.getBalanceHistoryHourly(
+            dateTimeLate.minusHours(1),
+            dateTimeLate.plusHours(4)
+        )
+            .collect(Collectors.toList())
+            .block()!!
+        assertEquals(3, res.size)
+        assertEquals(BigDecimal("2"), res.first().balance)
+        assertTrue(dateTimeLateTruncated.isEqual(resultLast.first().dateTime))
+        assertEquals(BigDecimal("4"), res[1].balance)
+        assertTrue(dateTimeTruncated.isEqual(resultLast[1].dateTime))
+        assertEquals(BigDecimal("5"), res[2].balance)
+        assertTrue(dateTimeLastTruncated.isEqual(resultLast[2].dateTime))
+
+        // If we update existing previous record, we should update later ones
+        // 2011-10-05T10:00:00+00:00 - 2
+        // 2011-10-05T11:00:00+00:00 - 4
+        // 2011-10-05T12:00:00+00:00 - 5
+        // 2011-10-05T14:00:00+00:00 - 6
+        val dateTimeVeryLast = OffsetDateTime.parse("2011-10-05T13:48:01+00:00")
+        val dateTimeVeryLastTruncated = dateTimeVeryLast.truncateToHourEnd()
+        aggregateRepository.processAmount(dslContext, dateTimeVeryLast, BigDecimal.ONE).block()
+        val resultVeryLast = aggregateRepository.getBalanceHistoryHourly(
+            dateTimeVeryLast.minusHours(4),
+            dateTimeVeryLast.plusHours(1)
+        )
+            .collect(Collectors.toList())
+            .block()!!
+        assertEquals(4, resultVeryLast.size)
+        assertEquals(BigDecimal("2"), resultVeryLast.first().balance)
+        assertTrue(dateTimeLateTruncated.isEqual(resultVeryLast.first().dateTime))
+        assertEquals(BigDecimal("4"), resultVeryLast[1].balance)
+        assertTrue(dateTimeTruncated.isEqual(resultVeryLast[1].dateTime))
+        assertEquals(BigDecimal("5"), resultVeryLast[2].balance)
+        assertTrue(dateTimeLastTruncated.isEqual(resultVeryLast[2].dateTime))
+        assertEquals(BigDecimal("6"), resultVeryLast[3].balance)
+        assertTrue(dateTimeVeryLastTruncated.isEqual(resultVeryLast[3].dateTime))
     }
 
     @Test
-    fun `transactions should work`() {
+    fun `transaction should work`() {
         val dateTime = OffsetDateTime.now()
         assertThrows<DataAccessException> {
             transactionalUtils.transaction {
