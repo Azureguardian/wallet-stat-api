@@ -2,8 +2,6 @@ package com.anymindgroup.web.server.task.controller
 
 import com.anymindgroup.web.server.task.entity.BaseError
 import com.anymindgroup.web.server.task.exceptions.IncorrectDateTimeException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
