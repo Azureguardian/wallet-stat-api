@@ -6,6 +6,7 @@ import com.anymindgroup.web.server.task.interfaces.WalletStorage
 import com.anymindgroup.web.server.task.repository.WalletBalanceDateTimeAggregateRepository.Companion.balanceAggregate
 import com.anymindgroup.web.server.task.repository.WalletRepository.Companion.transactions
 import com.anymindgroup.web.server.task.util.atBangkok
+import com.anymindgroup.web.server.task.util.truncateToHourEnd
 import org.jooq.DSLContext
 import org.jooq.exception.DataAccessException
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -43,6 +44,9 @@ class RepositoryTests {
 
     @Autowired
     lateinit var walletRepository: WalletStorage
+
+    @Autowired
+    lateinit var aggregateRepository: WalletBalanceDateTimeAggregateRepository
 
     companion object {
         @Container
@@ -97,6 +101,60 @@ class RepositoryTests {
             assertEquals(transactionDto.datetime.atBangkok(), it[transactions.DATETIME].atBangkok())
         }
             .block()
+    }
+
+    @Test
+    fun `hourly wallet balance should change correctly`() {
+        // Aggregate is empty
+        // 2011-10-05T11:00:00+00:00 - 1
+        val dateTime = OffsetDateTime.parse("2011-10-05T10:48:01+00:00")
+        aggregateRepository.processAmount(dslContext, dateTime, BigDecimal.ONE).block()
+        aggregateRepository.processAmount(dslContext, dateTime, BigDecimal.ONE).block()
+        val result = aggregateRepository.getBalanceHistoryHourly(dateTime.minusHours(1), dateTime.plusHours(1))
+            .collect(Collectors.toList())
+            .block()!!
+        assertEquals(1, result.size)
+        assertEquals(BigDecimal("2"), result.first().balance)
+        assertTrue(dateTime.truncateToHourEnd().isEqual(result.first().dateTime))
+
+        // If we receive a "late" transaction, where dateTime < current hour
+        // We update aggregate by amount for all records where dateTime > transaction dateTime
+        // 2011-10-05T10:00:00+00:00 - 1
+        // 2011-10-05T11:00:00+00:00 - 3
+        val dateTimeLate = OffsetDateTime.parse("2011-10-05T09:48:01+00:00")
+        aggregateRepository.processAmount(dslContext, dateTimeLate, BigDecimal.ONE).block()
+        val resultWithLateTransaction = aggregateRepository.getBalanceHistoryHourly(
+            dateTimeLate.minusHours(2),
+            dateTimeLate.plusHours(2)
+        )
+            .collect(Collectors.toList())
+            .block()!!
+            .sortedBy { it.dateTime }
+        assertEquals(2, resultWithLateTransaction.size)
+        assertEquals(BigDecimal.ONE, resultWithLateTransaction.first().balance)
+        assertTrue(dateTimeLate.truncateToHourEnd().isEqual(resultWithLateTransaction.first().dateTime))
+        assertEquals(BigDecimal("3"), resultWithLateTransaction[1].balance)
+        assertTrue(dateTime.truncateToHourEnd().isEqual(resultWithLateTransaction[1].dateTime))
+
+        // 2011-10-05T10:00:00+00:00 - 1
+        // 2011-10-05T11:00:00+00:00 - 3
+        // 2011-10-05T12:00:00+00:00 - 4
+        val dateTimeLast = OffsetDateTime.parse("2011-10-05T11:48:01+00:00")
+        aggregateRepository.processAmount(dslContext, dateTimeLast, BigDecimal.ONE).block()
+        val resultLast = aggregateRepository.getBalanceHistoryHourly(
+            dateTimeLast.minusHours(3),
+            dateTimeLast.plusHours(1)
+        )
+            .collect(Collectors.toList())
+            .block()!!
+            .sortedBy { it.dateTime }
+        assertEquals(3, resultLast.size)
+        assertEquals(BigDecimal.ONE, resultLast.first().balance)
+        assertTrue(dateTimeLate.truncateToHourEnd().isEqual(resultLast.first().dateTime))
+        assertEquals(BigDecimal("3"), resultLast[1].balance)
+        assertTrue(dateTime.truncateToHourEnd().isEqual(resultLast[1].dateTime))
+        assertEquals(BigDecimal("4"), resultLast[2].balance)
+        assertTrue(dateTimeLast.truncateToHourEnd().isEqual(resultLast[2].dateTime))
     }
 
     @Test

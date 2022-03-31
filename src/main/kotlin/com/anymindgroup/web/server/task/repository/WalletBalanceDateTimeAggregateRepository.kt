@@ -4,6 +4,7 @@ import com.anymindgroup.web.server.task.aggregates.Aggregates.AGGREGATES
 import com.anymindgroup.web.server.task.aggregates.tables.BalanceHourly
 import com.anymindgroup.web.server.task.entity.dto.BalanceByDateTimeDto
 import com.anymindgroup.web.server.task.interfaces.WalletBalanceDateTimeAggregateStorage
+import com.anymindgroup.web.server.task.util.truncateToHourEnd
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Repository
@@ -32,17 +33,21 @@ class WalletBalanceDateTimeAggregateRepository(
                 balanceAggregate.BALANCE,
                 balanceAggregate.DATETIME
             ).from(balanceAggregate)
+                .where(balanceAggregate.DATETIME.le(end))
+                .and(balanceAggregate.DATETIME.ge(start))
         ).map {
             BalanceByDateTimeDto(
                 dateTime = it[balanceAggregate.DATETIME],
                 balance = it[balanceAggregate.BALANCE]
             )
-        }
+        }.sort(
+            Comparator.comparing(BalanceByDateTimeDto::dateTime)
+        )
     }
 
     @Transactional
-    override fun update(dslContext: DSLContext, dateTime: OffsetDateTime, amount: BigDecimal): Mono<Unit> {
-        val dateTimeHourly = dateTime.truncatedTo(ChronoUnit.HOURS).plusHours(1)
+    override fun processAmount(dslContext: DSLContext, dateTime: OffsetDateTime, amount: BigDecimal): Mono<Unit> {
+        val dateTimeHourly = dateTime.truncateToHourEnd()
         val currentAggregateValue = Mono.from(
             dslContext.select(balanceAggregate.DATETIME)
                 .from(balanceAggregate)
@@ -62,6 +67,7 @@ class WalletBalanceDateTimeAggregateRepository(
                             DSL.select(balanceAggregate.BALANCE)
                                 .from(balanceAggregate)
                                 .where(balanceAggregate.DATETIME.le(dateTimeHourly))
+                                .orderBy(balanceAggregate.DATETIME.desc())
                                 .limit(1),
                             BigDecimal.ZERO
                         )

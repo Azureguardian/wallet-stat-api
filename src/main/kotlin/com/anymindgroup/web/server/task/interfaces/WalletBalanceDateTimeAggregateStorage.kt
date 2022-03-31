@@ -11,5 +11,5 @@ interface WalletBalanceDateTimeAggregateStorage {
 
     fun getBalanceHistoryHourly(start: OffsetDateTime, end: OffsetDateTime): Flux<BalanceByDateTimeDto>
 
-    fun update(dslContext: DSLContext, dateTime: OffsetDateTime, amount: BigDecimal): Mono<Unit>
+    fun processAmount(dslContext: DSLContext, dateTime: OffsetDateTime, amount: BigDecimal): Mono<Unit>
 }

@@ -3,6 +3,7 @@ package com.anymindgroup.web.server.task.controller
 import com.anymindgroup.web.server.task.entity.dto.BalanceByDateTimeDto
 import com.anymindgroup.web.server.task.entity.payload.TransactionPayload
 import com.anymindgroup.web.server.task.service.WalletService
+import com.anymindgroup.web.server.task.util.truncateToHourEnd
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.coEvery
 import io.mockk.every
@@ -20,6 +21,7 @@ import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 
+@Suppress("ReactiveStreamsUnusedPublisher")
 @WebFluxTest(controllers = [WalletController::class])
 class WalletControllerTests {
 
@@ -34,12 +36,12 @@ class WalletControllerTests {
         val dateStart = OffsetDateTime.parse("2011-10-05T10:48:01+00:00")
         val dateEnd = OffsetDateTime.parse("2011-10-05T18:48:02+00:00")
         val balanceByDateTimeDto = BalanceByDateTimeDto(
-            dateTime = OffsetDateTime.now().truncatedTo(ChronoUnit.HOURS),
+            dateTime = OffsetDateTime.now().truncateToHourEnd(),
             balance = BigDecimal("1001.1")
         )
         every { walletService.getBalanceByDateTimes(dateStart, dateEnd) } returns Flux.just(balanceByDateTimeDto)
         val uri = UriComponentsBuilder.newInstance()
-            .path("/wallet/balance_stat")
+            .path("/wallet/history")
             .queryParam("start_datetime", dateStart)
             .queryParam("end_datetime", dateEnd)
             .build()
