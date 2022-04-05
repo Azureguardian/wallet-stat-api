@@ -1,7 +1,7 @@
 # wallet-stat-api
 
 #### Build    
-`make`, `docker`, `docker-compose`, `gradle` are needed to build and run this project.  
+`make`, `docker`, `docker-compose`, `gradle`, `java 11` are needed to build and run this project.  
 
 Apply migrations, create image for tests, build
 ```
