@@ -32,3 +32,8 @@ Get balance history
 ```
 curl http://localhost:8080/wallet/history?start_datetime=2011-10-05T10%3A48%3A01%2B00%3A00&end_datetime=2022-10-05T18%3A48%3A02%2B00%3A00
 ```
+
+#### Stop db
+```
+make clean
+```
